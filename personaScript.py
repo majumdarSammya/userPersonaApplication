@@ -80,22 +80,14 @@ def home():
 """
     clear_button = st.button("Refresh", key="clear")
     name = st.selectbox("Select a customer:",
-                        ('Alex', 'Sarah', 'Luke', "Vikram"))
-    names = ['Alex', 'Sarah', 'Luke', "Vikram"]
+                        ('Sarah', 'Luke', "Vikram"))
+    names = ['Sarah', 'Luke', "Vikram"]
 
     for item in names:
         if name == item:
             st.write("You are now chatting with", name)
             init_persona = getPersonaPrompt(item)
 
-    # if name == 'Alex':
-    #     init_persona = getPersonaPrompt('Alex Miller')
-    # elif name == 'Luke':
-    #     init_persona = getPersonaPrompt('Luke')
-    # elif name == 'Luke':
-    #     init_persona = getPersonaPrompt('Luke')
-    # else:
-    #     init_persona = getPersonaPrompt('Sarah Thompson')
 
     if clear_button:
         system_prompt = """
