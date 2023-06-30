@@ -1,41 +1,58 @@
 import openai
 import os
 import pandas as pd
+from ast import literal_eval
 import streamlit as st
 from streamlit_chat import message
-import random
+from openai.embeddings_utils import get_embedding
+from openai.embeddings_utils import distances_from_embeddings
 
 # PATH = "persona.csv"
 
-openai.api_key = st.secrets["OPEN_AI_API_KEY"]
+openai.api_key = "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"
 
-
-
+embeddedDataSet = pd.read_csv("customerServiceEmbeddings.csv")
 personaList = []
 
 
-# def getPersona(PATH):
-#     personaData = pd.read_csv(PATH, sep=";", encoding='cp1252')
-#     personaData.index = [x for x in range(1, len(personaData.values)+1)]
+def getContext(user_input, df):
+    df['embeddings'] = df['embeddings'].apply(literal_eval)
+    q_embedding = get_embedding(
+        text=user_input,
+        engine="text-embedding-ada-002")
 
-#     return personaData.iloc[random.randint(0, len(personaData.index)), :].to_json()
+    df['distances'] = distances_from_embeddings(
+        q_embedding, df['embeddings'].values, distance_metric='cosine')
+
+    returns = []
+    cur_len = 0
+
+    for i, row in df.sort_values('distances', ascending=True).iterrows():
+        returns.append("text: "+row["text"])
+
+    return returns, df.sort_values('distances', ascending=True)
 
 
 @st.cache_data
-def generate_response(system_prompt, user_prompt):
+def generate_response(df, system_prompt, user_prompt, context_length=5):
     st.session_state['messages'] = [
         {"role": "system", "content": system_prompt}
     ]
+    contexts, contextsdf = getContext(user_prompt, df)
+    contexts = '\n\n###\n\n'.join(contexts[0:context_length])
+
+    prompt = '\n\nContext: ' + contexts + \
+        ' \n\n---\n\nQuestion:' + user_prompt + '\n\nAnswer:'
+
     response = openai.ChatCompletion.create(
         messages=[
             {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': user_prompt},
+            {'role': 'user', 'content': prompt},
         ],
         model="gpt-3.5-turbo",
         max_tokens=3000,
         temperature=0.3,
     )
-    reply = response.choices[0].message.content
     st.session_state['messages'].append(
         {"role": "assistant", "content": response})
     return response['choices'][0]['message']['content'].strip()
@@ -64,20 +81,6 @@ def home():
 
     # init_persona = getPersona(PATH, 16)
 
-    st.title("User Persona Chat Assistant")
-    st.markdown("This is the User Persona Chat Assistant. It is capable of conversations with an user as users of sky products with vastly different buying habits and needs.")
-    st.markdown("This application leverages openAI GPT-3.5-Turbo model.")
-    system_prompt = """
-
-    You are a customer who uses a lot of sky media company products. You have to do the following:
-    - Learn what you can from the web on sky and their product offerings.
-    - Understand the customer you will impersonate. This will be provided to you at the end of this prompt.
-    - Do not under any circumstances use offensive language.
-    - Format your answer in the following way: 
-            - Respond as the customer
-            - If you can't understand the question, please ask the user to rephrase the question.
-
-"""
     clear_button = st.button("Refresh", key="clear")
     name = st.selectbox("Select a customer:",
                         ('Sarah', 'Luke', "Vikram"))
@@ -88,22 +91,27 @@ def home():
             st.write("You are now chatting with", name)
             init_persona = getPersonaPrompt(item)
 
+    st.title("User Persona Chat Assistant")
+    st.markdown("This is the User Persona Chat Assistant. It is capable of conversations with an user as users of sky products with vastly different buying habits and needs.")
+    st.markdown("This application leverages openAI GPT-3.5-Turbo model.")
+    system_prompt = f"""
+
+    You are a customer who uses a lot of sky media company products. You have to do the following:
+    - Learn what you can from the web on sky and their product offerings.
+    - Learn how customers complain from the context provided.
+    - Understand the customer you will impersonate from the following persona profile: {init_persona}
+    - Do not under any circumstances use offensive language.
+    - Format your answer in the following way: 
+            - Respond as the customer, but dont mention it.
+            - If you can't understand the question, please ask the user to rephrase the question.
+
+"""
 
     if clear_button:
-        system_prompt = """
-
-                            You are a customer who uses a lot of sky media company products. You have to do the following:
-                            - Learn what you can from the web on sky and their product offerings.
-                            - Understand the customer from the information provided at the end of this prompt.
-                            - Format your answer in the following way: 
-                                - Respond as the customer
-
-                        """
-
         st.session_state['generated'] = []
         st.session_state['past'] = []
         st.session_state['messages'] = [
-            {"role": "system", "content": system_prompt+init_persona}
+            {"role": "system", "content": system_prompt}
         ]
 
     text_container = st.container()
@@ -126,7 +134,8 @@ def home():
             submit_button = st.form_submit_button(label='Send')
 
     if submit_button and user_input:
-        output = generate_response(system_prompt+init_persona, user_input)
+        output = generate_response(
+            embeddedDataSet, system_prompt, user_input, context_length=5)
         st.session_state['past'].append(user_input)
         st.session_state['generated'].append(output)
 
