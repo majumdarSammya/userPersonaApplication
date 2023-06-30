@@ -9,7 +9,6 @@ from openai.embeddings_utils import distances_from_embeddings
 
 # PATH = "persona.csv"
 
-openai.api_key = "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"
 
 embeddedDataSet = pd.read_csv("customerServiceEmbeddings.csv")
 personaList = []

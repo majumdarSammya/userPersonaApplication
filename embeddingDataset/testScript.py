@@ -4,7 +4,6 @@ import pandas as pd
 from ast import literal_eval
 import numpy as np
 
-openai.api_key = "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"
 
 embedding = get_embedding(
     text="how can I help you today",
