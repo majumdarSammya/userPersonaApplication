@@ -6,6 +6,7 @@ import numpy as np
 
 # put  open.api_key="api key here"
 
+
 data = preProcess.embeddingData.head(100)
 
 
