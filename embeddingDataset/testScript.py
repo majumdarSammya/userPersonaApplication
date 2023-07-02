@@ -5,6 +5,7 @@ from ast import literal_eval
 import numpy as np
 
 
+# put  open.api_key="api key here"
 
 embedding = get_embedding(
     text="how can I help you today",

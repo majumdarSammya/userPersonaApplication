@@ -9,7 +9,7 @@ from openai.embeddings_utils import distances_from_embeddings
 
 # PATH = "persona.csv"
 
-
+openai.api_key = st.secrets["OPEN_AI_API_KEY"]
 
 embeddedDataSet = pd.read_csv("customerServiceEmbeddings.csv")
 personaList = []
@@ -81,6 +81,10 @@ def home():
 
     # init_persona = getPersona(PATH, 16)
 
+    st.title("User Persona Chat Assistant")
+    st.markdown("This is the User Persona Chat Assistant. It is capable of conversations with an user as users of sky products with vastly different buying habits and needs.")
+    st.markdown("This application leverages openAI GPT-3.5-Turbo model that has been fine-tuned with large scale customer service dataset embeddings from Text-Ada-Embedding-002.")
+
     clear_button = st.button("Refresh", key="clear")
     name = st.selectbox("Select a customer:",
                         ('Sarah', 'Luke', "Vikram"))
@@ -91,9 +95,6 @@ def home():
             st.write("You are now chatting with", name)
             init_persona = getPersonaPrompt(item)
 
-    st.title("User Persona Chat Assistant")
-    st.markdown("This is the User Persona Chat Assistant. It is capable of conversations with an user as users of sky products with vastly different buying habits and needs.")
-    st.markdown("This application leverages openAI GPT-3.5-Turbo model.")
     system_prompt = f"""
 
     You are a customer who uses a lot of sky media company products. You have to do the following:

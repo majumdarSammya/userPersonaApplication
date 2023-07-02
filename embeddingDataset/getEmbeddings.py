@@ -4,8 +4,8 @@ import openai
 from transformers import GPT2TokenizerFast
 import numpy as np
 
+# put  open.api_key="api key here"
 
-openai.api_key = "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"
 data = preProcess.embeddingData.head(100)
 
 
