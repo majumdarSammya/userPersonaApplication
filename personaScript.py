@@ -9,6 +9,9 @@ from openai.embeddings_utils import distances_from_embeddings
 
 # PATH = "persona.csv"
 
+st.markdown("Main Page")
+st.sidebar.markdown("Main Page")
+
 openai.api_key = st.secrets["OPEN_AI_API_KEY"]
 
 embeddedDataSet = pd.read_csv("customerServiceEmbeddings.csv")
