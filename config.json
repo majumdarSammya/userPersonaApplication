@@ -1,0 +1,6 @@
+{
+    "KEY_VAULT_URL": "https://kv-oai-herademos.vault.azure.net/",
+    "gpt3.5": "hera-gpt-35-turbo",
+    "gpt4": "hera-gpt-4",
+    "embedding_model": "hera-text-embedding-ada-002"
+}
